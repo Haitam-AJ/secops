@@ -1,14 +1,20 @@
+# Use the official Python image from the Docker Hub
 FROM python:3
 
-# Install SQLite
-RUN apt-get update && apt-get install -y sqlite3 libsqlite3-dev
-
-# Create a directory for the application
+# Set the working directory in the container
 WORKDIR /app
 
-# Copy the Python script and the SQLite database file
-COPY script.py /app/
-COPY example.db /app/
+# Copy the requirements file into the container at /app
+COPY requirements.txt /app/
 
-# Run the Python script
-CMD ["python", "script.py"]
+# Install any dependencies specified in requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the rest of the application code into the container at /app
+COPY . /app/
+
+# Create a SQLite database file
+RUN python create_database.py
+
+# Command to run the application
+CMD ["python", "app.py"]

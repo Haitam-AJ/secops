@@ -1,16 +1,45 @@
-import hashlib
+from flask import Flask, render_template, request, redirect, url_for
 import sqlite3
+import hashlib
 
-# Vulnerability 1: Use of a weak hash function
-password = "password123"
-md5_hash = hashlib.md5(password.encode()).hexdigest()
+app = Flask(__name__)
+app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 
-# Vulnerability 2: Use of exec function
-user_input = input("Enter a command to execute: ")
-exec(user_input)
+def create_database():
+    conn = sqlite3.connect('data.db')
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS users
+                 (id INTEGER PRIMARY KEY, username TEXT, password TEXT)''')
+    conn.commit()
+    conn.close()
 
-# Vulnerability 3: SQL Injection
-conn = sqlite3.connect('example.db')
-cursor = conn.cursor()
-user_id = 1
-cursor.execute(f"SELECT * FROM users WHERE id = {user_id}")
+def insecure_hash(password):
+    return hashlib.md5(password.encode()).hexdigest()
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/login', methods=['POST'])
+def login():
+    username = request.form['username']
+    password = request.form['password']
+    
+    conn = sqlite3.connect('data.db')
+    c = conn.cursor()
+    c.execute("SELECT * FROM users WHERE username=? AND password=?", (username, insecure_hash(password)))
+    user = c.fetchone()
+    conn.close()
+
+    if user:
+        return redirect(url_for('dashboard'))
+    else:
+        return redirect(url_for('index'))
+
+@app.route('/dashboard')
+def dashboard():
+    return "Welcome to the dashboard!"
+
+if __name__ == '__main__':
+    create_database()
+    app.run(debug=True)
