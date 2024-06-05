@@ -1,43 +1,20 @@
-name: SonarCloud Scan
-
+name: Build
 on:
   push:
     branches:
       - main
   pull_request:
-    branches:
-      - main
-
+    types: [opened, synchronize, reopened]
 jobs:
-  sonarCloud:
+  sonarcloud:
+    name: SonarCloud
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'
-
-    - name: Cache SonarCloud packages
-      uses: actions/cache@v2
-      with:
-        path: ~/.sonar/cache
-        key: ${{ runner.os }}-sonar-${{ hashFiles('**/sonar-project.properties') }}
-        restore-keys: |
-          ${{ runner.os }}-sonar-
-
-    - name: Install SonarScanner
-      run: |
-        sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 9CDB294B29A5B1E2E00C24C022E8EF3461A50EF6
-        echo 'deb https://debian.sonarsource.com/sonarqube/ stable main' | sudo tee -a /etc/apt/sources.list
-        sudo apt-get update && sudo apt-get install -y sonar-scanner
-
-    - name: SonarCloud Scan
-      run: sonar-scanner \
-        -Dsonar.projectKey=my:vulnerable-python-project \
-        -Dsonar.sources=. \
-        -Dsonar.host.url=https://sonarcloud.io \
-        -Dsonar.login=6ca4b2c7ee7f3b4efac2bcae54b7f06587e44d3c
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
