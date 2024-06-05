@@ -40,4 +40,4 @@ jobs:
         -Dsonar.projectKey=my:vulnerable-python-project \
         -Dsonar.sources=. \
         -Dsonar.host.url=https://sonarcloud.io \
-        -Dsonar.login=6202b6a99e3fb92d6ee14fac68b39fffb32856f7
+        -Dsonar.login=6ca4b2c7ee7f3b4efac2bcae54b7f06587e44d3c
